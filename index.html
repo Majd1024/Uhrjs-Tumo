@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Clock with Night Mode</title>
+    <style>
+        canvas {
+            display: block; margin: 0 auto;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="clockCanvas" width="400" height="400" style="display: block; margin: 0 auto;"></canvas>
+
+<script>
+    function drawClock(hours, minutes, seconds) {
+        const canvas = document.getElementById('clockCanvas');
+        const ctx = canvas.getContext('2d');
+        const radius = canvas.height / 2;
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before drawing
+        ctx.translate(radius, radius); // Move the origin to the center
+
+        const isNight = hours >= 18 || hours < 6; // Night mode between 18:00 and 6:00
+        drawFace(ctx, radius, isNight);
+        
+        // Draw hour, minute, and second hands
+        drawHands(ctx, radius, hours, minutes, seconds, isNight);
+
+        // Reset the translation for future updates
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    function drawFace(ctx, radius, isNight) {
+        // Draw the clock face
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = isNight ? '#000080' : 'white'; // Blue for night mode, white for day
+        ctx.fill();
+
+        // Draw the clock border
+        ctx.strokeStyle = isNight ? '#FF6347' : '#00FF00'; // Red for night mode, green for day
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        // Draw the ticks around the clock face
+        for (let i = 0; i < 60; i++) {
+            let angle = (i * Math.PI) / 30;
+            ctx.rotate(angle);
+            ctx.moveTo(0, -radius);
+            ctx.lineTo(0, -radius * (i % 5 === 0 ? 0.85 : 0.9)); // Longer lines for hours
+            ctx.strokeStyle = isNight ? '#FF6347' : '#00FF00'; // Red for night mode, green for day
+            ctx.lineWidth = i % 5 === 0 ? 3 : 1; // Thicker for hour ticks
+            ctx.stroke();
+            ctx.rotate(-angle);
+        }
+    }
+
+    function drawHands(ctx, radius, hours, minutes, seconds, isNight) {
+        let hour = hours % 12;
+        hour = (hour * Math.PI) / 6 + (minutes * Math.PI) / (6 * 60) + (seconds * Math.PI) / (360 * 60);
+        drawHand(ctx, hour, radius * 0.5, 7, isNight ? '#FF6347' : '#00FF00'); // Red for night, green for day
+
+        let minute = (minutes * Math.PI) / 30 + (seconds * Math.PI) / (30 * 60);
+        drawHand(ctx, minute, radius * 0.75, 5, isNight ? '#FF6347' : '#00FF00'); // Red for night, green for day
+
+        let second = (seconds * Math.PI) / 30;
+        drawHand(ctx, second, radius * 0.9, 2, 'red'); // Red second hand for both
+    }
+
+    function drawHand(ctx, pos, length, width, color) {
+        ctx.beginPath();
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = color;
+        ctx.moveTo(0, 0);
+        ctx.rotate(pos);
+        ctx.lineTo(0, -length);
+        ctx.stroke();
+        ctx.rotate(-pos);
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        drawClock(hours, minutes, seconds);
+    }
+
+    setInterval(updateClock, 1000); // Update the clock every second
+</script>
+
+</body>
+</html>
